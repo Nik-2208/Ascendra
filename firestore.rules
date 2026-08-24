@@ -1,0 +1,117 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuth() {
+      return request.auth != null;
+    }
+    function isOwner(userId) {
+      return isAuth() && request.auth.uid == userId;
+    }
+    function isAdmin() {
+      return isAuth() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)/profile/main).data.isAdmin == true;
+    }
+
+    // User data — owner-only read/write
+    match /users/{userId}/profile/{docId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) && 
+                    !request.resource.data.diff(resource.data).affectedKeys().hasAny(['level', 'totalXP', 'coins', 'stats']);
+      allow delete: if false; // Never delete profile
+    }
+
+    match /users/{userId}/quests/{questId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    match /users/{userId}/bosses/{bossId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    match /users/{userId}/streaks/{streakId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    match /users/{userId}/achievements/{achievementId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if false;
+    }
+
+    match /users/{userId}/pets/{petId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    match /users/{userId}/inventory/{itemId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    match /users/{userId}/moneyJar/{docId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if false;
+    }
+
+    match /users/{userId}/moneyJar/transactions/{txId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow delete: if false;
+    }
+
+    match /users/{userId}/analytics/{eventId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
+      allow delete: if false;
+    }
+
+    match /users/{userId}/notifications/{notifId} {
+      allow read: if isOwner(userId);
+      allow update: if isOwner(userId); // mark as read
+      allow create: if isOwner(userId) || isAdmin();
+      allow delete: if isOwner(userId);
+    }
+
+    match /users/{userId}/action_logs/{logId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow delete: if false; // Logs are append-only
+    }
+
+    // Shop items — read for authenticated, write for admins
+    match /shop_items/{itemId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+
+    // Templates — read-only for authenticated users, write for admins
+    match /templates/{collection}/{docId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+
+    // Leaderboards — read-only
+    match /leaderboards/{document=**} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+  }
+}

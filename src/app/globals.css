@@ -1,26 +1,128 @@
 @import "tailwindcss";
+@plugin "tailwindcss-animate";
+@custom-variant dark (&:is(.dark *));
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-cinzel), ui-serif, Georgia, serif;
 
-@theme inline {
+  --color-border: var(--border);
+  --color-input: var(--border);
+  --color-ring: var(--primary);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-muted-foreground: var(--foreground-secondary);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-destructive: var(--destructive);
+
+  --color-xp: #38BDF8;
+  --color-coins: #F59E0B;
+  --color-health: #EF4444;
+  --color-mana: #2563EB;
+  --color-success: #10B981;
+  --color-warning: #f97316;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ==========================================
+   SEMANTIC THEME TOKENS
+   ========================================== */
+
+/* Dark Mode Tokens (Default / .dark - #05070C Obsidian & Royal Gold) */
+:root, .dark {
+  --background: #05070C;
+  --surface: #0C1220;
+  --surface-elevated: #141C2E;
+  --primary: #F4C542;
+  --secondary: #E2E8F0;
+  --accent: #38BDF8;
+  --destructive: #E74C3C;
+  --border: rgba(244, 197, 66, 0.15);
+  --muted: #0C1220;
+  --foreground: #F8FAFC;
+  --foreground-secondary: #94A3B8;
+  --card: rgba(12, 18, 32, 0.90);
+  --card-hover: rgba(20, 28, 46, 0.95);
+  --shadow: rgba(0, 0, 0, 0.7);
+  --glow: rgba(244, 197, 66, 0.20);
+}
+
+/* Premium Parchment + Ivory Light Mode Tokens (.light) */
+.light {
+  --background: #FBF8F1;
+  --surface: #F3EFE0;
+  --surface-elevated: #E8DFCA;
+  --primary: #B8860B;
+  --secondary: #475569;
+  --accent: #0284C7;
+  --destructive: #DC2626;
+  --border: rgba(184, 134, 11, 0.2);
+  --muted: #F3EFE0;
+  --foreground: #1C1917;
+  --foreground-secondary: #78716C;
+  --card: rgba(243, 239, 224, 0.92);
+  --card-hover: rgba(232, 223, 202, 0.95);
+  --shadow: rgba(28, 25, 23, 0.08);
+  --glow: rgba(184, 134, 11, 0.15);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+    transition: background-color 250ms ease, border-color 250ms ease, color 250ms ease;
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Global Custom Cursor Hide Rules on Non-Touch Devices */
+@media (hover: hover) and (pointer: fine) {
+  body.has-custom-cursor,
+  body.has-custom-cursor *:not(input):not(textarea):not([contenteditable]) {
+    cursor: none !important;
+  }
+}
+
+/* Native Text Cursor for Input Elements */
+input, textarea, [contenteditable] {
+  cursor: text !important;
+}
+
+/* Glassmorphism Vendor Prefixes & Safari Fallbacks */
+.rpg-panel, .glass-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 30px var(--shadow);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+/* Safari Form Element Fixes */
+input, select, textarea, button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Custom scrollbar */
+.rpg-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.rpg-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+.rpg-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  opacity: 0.4;
+  border-radius: 4px;
 }

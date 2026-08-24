@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ASCENDRA RPG
 
-## Getting Started
+A production-ready, gamified life operating system built as a Next.js full-stack application. Turn your daily tasks and life goals into an epic RPG adventure!
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Command Center:** Real-time dashboard of your level, XP, coins, and active quests.
+- **Quest System:** Daily, weekly, and epic quests with natural language parsing.
+- **Boss Arena:** Link your largest goals to boss fights. Deal damage by completing related quests.
+- **Urge Battles:** Fight your bad habits in interactive encounters.
+- **Smart Scheduler:** An AI-powered timeline view that maps tasks to your peak energy hours.
+- **AI Coach:** Receive data-driven insights on your productivity and habit patterns.
+- **Skill Tree:** Unlock permanent buffs using skill points gained from leveling up.
+- **Reward Shop:** Spend your hard-earned coins on real-world rewards you configure.
+- **Money Jar:** A digital twin mapping your positive habits to real-world savings.
+- **PWA Support:** Installable as a mobile app for offline access.
+- **Web Audio API:** Synthesized RPG sound effects directly in the browser.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Framework:** Next.js (App Router)
+- **Styling:** Tailwind CSS v4 + Shadcn UI (Customized)
+- **Backend:** Firebase (Firestore + Auth)
+- **State Management:** Zustand
+- **Animations:** Framer Motion (Coming soon) / Tailwind Animate
+- **PWA:** Serwist
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Setup Instructions
 
-## Learn More
+1. **Clone & Install:**
+   ```bash
+   npm install
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+2. **Firebase Setup:**
+   - Create a project on [Firebase Console](https://console.firebase.google.com/).
+   - Enable **Firestore Database** and **Authentication** (Email/Password).
+   - Get your client config and create a `.env.local` file based on `.env.example`.
+   - Generate a private key from Project Settings > Service Accounts and add it to `.env.local`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. **Run Locally:**
+   ```bash
+   npm run dev
+   ```
+   Open `http://localhost:3000`. Create a new character from the sign-in screen.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This application is optimized for deployment on [Vercel](https://vercel.com).
+Ensure you add all your `.env` variables to your Vercel project settings before deploying.
