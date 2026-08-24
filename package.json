@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "postinstall": "prisma generate",
     "clean": "node scripts/self-heal.js",
     "dev": "node scripts/self-heal.js && next dev",
     "build": "node scripts/self-heal.js && next build",
