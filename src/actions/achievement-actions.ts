@@ -2,70 +2,104 @@
 
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import type { AchievementProgress, Streak } from "@prisma/client";
+import { ACHIEVEMENT_DEFINITIONS, type AchievementDefinition } from "@/lib/achievement-engine";
+import { RewardEngine } from "@/lib/services/reward-engine";
 
-export async function getAchievementsAction() {
+export interface AchievementItemDTO {
+  id: string;
+  name: string;
+  description: string;
+  iconUrl: string;
+  category: string;
+  requirement: number;
+  rewards: { xp: number; coins: number };
+  isUnlocked: boolean;
+  progress: number;
+  unlockedAt: Date | null;
+}
+
+export async function getAchievementsAction(): Promise<AchievementItemDTO[]> {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   const userId = session.user.id;
-  const { RewardEngine } = await import("@/lib/services/reward-engine");
   await RewardEngine.checkAndUnlockAchievements(userId);
 
-  const { ACHIEVEMENT_DEFINITIONS } = await import("@/lib/achievement-engine");
+  const [
+    userProgress,
+    character,
+    completedQuestsCount,
+    defeatedBossesCount,
+    streaks,
+    petCount,
+    itemCount,
+    skillsCount,
+    moneyJar
+  ] = await Promise.all([
+    prisma.achievementProgress.findMany({ where: { userId } }),
+    prisma.character.findUnique({
+      where: { userId },
+      include: { stats: true }
+    }),
+    prisma.questProgress.count({
+      where: { userId, status: "COMPLETED" }
+    }),
+    prisma.chronicle.count({
+      where: { userId, type: "BATTLE", title: { startsWith: "Defeated" } }
+    }),
+    prisma.streak.findMany({
+      where: { userId }
+    }),
+    prisma.pet.count({
+      where: { userId }
+    }),
+    prisma.inventoryItem.count({
+      where: { inventory: { userId } }
+    }),
+    prisma.skill.count({
+      where: { character: { userId } }
+    }),
+    prisma.moneyJar.findUnique({
+      where: { userId }
+    })
+  ]);
 
-  const userProgress = await prisma.achievementProgress.findMany({ where: { userId } });
-  const character = await prisma.character.findUnique({
-    where: { userId },
-    include: { stats: true }
-  });
-  const completedQuestsCount = await prisma.questProgress.count({
-    where: { userId, status: "COMPLETED" }
-  });
-  const defeatedBossesCount = await prisma.chronicle.count({
-    where: { userId, type: "BATTLE", title: { startsWith: "Defeated" } }
-  });
-  const streaks = await prisma.streak.findMany({
-    where: { userId }
-  });
-  const petCount = await prisma.pet.count({
-    where: { userId }
-  });
-  const itemCount = await prisma.inventoryItem.count({
-    where: { inventory: { userId } }
-  });
-  const skillsCount = await prisma.skill.count({
-    where: { character: { userId } }
-  });
+  const progressMap = new Map<string, AchievementProgress>(
+    userProgress.map((p) => [p.achievementId, p])
+  );
+  const maxStreak = streaks.reduce((max: number, s: Streak) => Math.max(max, s.best || 0), 0);
+  const totalCoins = moneyJar?.coins ?? 0;
 
-  const progressMap = new Map(userProgress.map((p: any) => [p.achievementId, p]));
-  const maxStreak = streaks.reduce((max: number, s: any) => Math.max(max, s.best || 0), 0);
-  const totalCoins = await prisma.moneyJar.findUnique({ where: { userId } }).then((m: any) => m?.coins || 0);
-
-  const getLiveProgress = (def: any) => {
+  const getLiveProgress = (def: AchievementDefinition): number => {
     const cond = def.condition;
     switch (cond.type) {
       case "quests_completed": return completedQuestsCount;
       case "bosses_defeated": return defeatedBossesCount;
       case "streak_count": return maxStreak;
-      case "level_reached": return character?.level || 1;
+      case "level_reached": return character?.level ?? 1;
       case "coins_accumulated": return totalCoins;
       case "pets_owned": return petCount;
       case "items_owned": return itemCount;
-      case "total_xp": return character?.xp || 0;
+      case "total_xp": return character?.xp ?? 0;
       case "skills_unlocked": return skillsCount;
       case "stat_level": {
-        const stats = character?.stats as any;
+        const stats = character?.stats;
         if (!stats) return 1;
-        const statKey = cond.stat;
-        return stats[statKey]?.level ?? 1;
+        if (cond.stat === "strength") return stats.strength;
+        if (cond.stat === "discipline") return stats.defense;
+        if (cond.stat === "knowledge") return stats.intelligence;
+        if (cond.stat === "health") return stats.hp;
+        return 1;
       }
       default: return 0;
     }
   };
 
-  return ACHIEVEMENT_DEFINITIONS.map(def => {
+  return ACHIEVEMENT_DEFINITIONS.map((def): AchievementItemDTO => {
     const progressRecord = progressMap.get(def.id);
-    const liveProg = progressRecord?.isUnlocked ? (def.condition.threshold) : getLiveProgress(def);
+    const isUnlocked = progressRecord?.isUnlocked ?? false;
+    const liveProg = isUnlocked ? def.condition.threshold : getLiveProgress(def);
 
     return {
       id: def.id,
@@ -75,9 +109,9 @@ export async function getAchievementsAction() {
       category: def.category,
       requirement: def.condition.threshold,
       rewards: def.rewards,
-      isUnlocked: progressRecord?.isUnlocked || false,
+      isUnlocked,
       progress: liveProg,
-      unlockedAt: progressRecord?.unlockedAt || null,
+      unlockedAt: progressRecord?.unlockedAt ?? null,
     };
   });
 }

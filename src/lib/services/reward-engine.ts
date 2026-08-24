@@ -131,7 +131,7 @@ export class RewardEngine {
    * Main evaluator for all user achievements.
    * Compiles user statistics, calculates snapshots, and inserts unlocks safely.
    */
-  static async checkAndUnlockAchievementsInternal(userId: string, tx?: any): Promise<number> {
+  static async checkAndUnlockAchievementsInternal(userId: string, tx?: unknown): Promise<number> {
     await RewardEngine.checkAndUnlockAchievements(userId);
     return 0;
   }
@@ -184,7 +184,7 @@ export class RewardEngine {
 
     if (!character) return;
 
-    const unlockedIds = new Set<string>(existingProgress.map((p: any) => p.achievementId));
+    const unlockedIds = new Set<string>(existingProgress.map((p) => p.achievementId));
     const candidates = ACHIEVEMENT_DEFINITIONS.filter(def => !unlockedIds.has(def.id));
 
     // Fast-path 1: If all achievements are already unlocked, return immediately! (< 15ms)
@@ -192,7 +192,7 @@ export class RewardEngine {
       return;
     }
 
-    const maxStreak = streaks.reduce((max: number, s: any) => Math.max(max, s.best || 0), 0);
+    const maxStreak = streaks.reduce((max: number, s) => Math.max(max, s.best || 0), 0);
     const totalCoins = moneyJar?.coins || 0;
 
     // 2. Evaluate candidates in pure JS memory (0ms)

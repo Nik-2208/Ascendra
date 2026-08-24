@@ -14,7 +14,7 @@ export interface AchievementDefinition {
   rewards: { xp: number; coins: number };
 }
 
-type AchievementCondition =
+export type AchievementCondition =
   | { type: "quests_completed"; threshold: number }
   | { type: "bosses_defeated"; threshold: number }
   | { type: "streak_count"; threshold: number }
